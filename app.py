@@ -14,7 +14,7 @@ Labels = ['Actinic keratosis', 'Basal cell carcinoma', 'Benign keratosis',
 
 confidence_threshold = 60
 # Memuat model
-model = load_model('./hasilkeduabersih_terbaik.keras')
+model = load_model('./model.keras')
 
 # Inisialisasi Flask
 app = Flask(__name__)
