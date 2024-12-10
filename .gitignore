@@ -1,1 +1,7 @@
 venv
+319c3206a7f10c17c3b9116d4a957646_venv
+__pycache__
+gunicorn_conf.py
+logs
+model-bucket.keras
+uploaded.jpg

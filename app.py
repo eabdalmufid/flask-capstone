@@ -1,5 +1,6 @@
 import os
-from flask import Flask, request, jsonify, send_file
+import requests
+from flask import Flask, request, jsonify, send_file, render_template, send_from_directory
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import load_img, img_to_array
 import numpy as np
@@ -13,8 +14,20 @@ Labels = ['Actinic keratosis', 'Basal cell carcinoma', 'Benign keratosis',
           'Squamous cell carcinoma', 'Vascular lesions']
 
 confidence_threshold = 60
+
+url = 'https://storage.googleapis.com/model-capstone-ml/model.keras'
+model_filename = './model-bucket.keras'  # Simpan di /tmp
+
+# Download the model file
+response = requests.get(url)
+if response.status_code == 200:
+    with open(model_filename, 'wb') as f:
+        f.write(response.content)
+else:
+    print("Failed to download the model.")
+    
 # Memuat model
-model = load_model('./model.keras')
+model = load_model(model_filename)
 
 # Inisialisasi Flask
 app = Flask(__name__)
@@ -35,6 +48,16 @@ def predict_image(image_path):
 
     return predicted_class, confidence, img
 
+# Route untuk menampilkan halaman index.html
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+# Route untuk menyajikan file README.md
+@app.route('/README.md')
+def readme():
+    return send_from_directory(os.getcwd(), 'README.md')
+    
 # Endpoint untuk prediksi
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -52,6 +75,10 @@ def predict():
     
     # Membaca file gambar
     img = Image.open(file.stream)
+    
+    # Pastikan gambar dalam mode RGB sebelum menyimpannya (untuk JPEG)
+    if img.mode == 'RGBA':
+        img = img.convert('RGB')  # Mengonversi RGBA ke RGB jika ada saluran alpha
     
     # Menyimpan file sementara untuk proses prediksi
     img_path = 'uploaded.jpg'
